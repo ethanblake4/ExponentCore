@@ -1,6 +1,6 @@
 package io.ethanblake4.exponentcore
 
-import io.ethanblake4.exponentcore.model.LogLevel
+import io.ethanblake4.exponentcore.model.internal.LogLevel
 
  object Logging {
      @JvmStatic @JvmOverloads fun d(message: String, err: Throwable? = null) = Exponent.logger(message, LogLevel.DEBUG, err)

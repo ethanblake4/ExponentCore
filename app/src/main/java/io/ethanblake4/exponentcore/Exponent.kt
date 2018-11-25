@@ -4,15 +4,15 @@ import android.content.Context
 import android.os.Build
 import android.support.annotation.Keep
 import android.util.Log
-import io.ethanblake4.exponentcore.model.LogLevel
+import io.ethanblake4.exponentcore.model.hlapi.SharedPrefsTokenRegistry
+import io.ethanblake4.exponentcore.model.hlapi.TokenRegistry
+import io.ethanblake4.exponentcore.model.internal.LogLevel
 import io.ethanblake4.exponentcore.util.IdentifiersUtil
 import okhttp3.OkHttpClient
 
 object Exponent {
 
     private const val TAG = "Exponent"
-
-    lateinit var client: OkHttpClient
 
     /**
      * Default logger that prints log messages to the Android log.
@@ -35,27 +35,31 @@ object Exponent {
         }
     }
 
-    var logger: (String, LogLevel, Throwable?) -> Int = defaultLog
-    var logLevel = LogLevel.DEBUG
-    var loginSDKVersion = Build.VERSION.SDK_INT
-    var loginUserAgent = IdentifiersUtil.makeUserAgent(
+    @JvmStatic lateinit var client: OkHttpClient
+
+    @JvmStatic var logger: (String, LogLevel, Throwable?) -> Int = defaultLog
+    @JvmStatic var logLevel = LogLevel.DEBUG
+    @JvmStatic var loginSDKVersion = Build.VERSION.SDK_INT
+    @JvmStatic var loginUserAgent = IdentifiersUtil.makeUserAgent(
             "GoogleLoginService/", "1.3", Build.PRODUCT, Build.ID, false)
-    lateinit var androidID: String
-    lateinit var gsfID: String
-    var deviceCountryCode = IdentifiersUtil.getDeviceCountryCode()
-    var deviceLanguage = IdentifiersUtil.getDeviceLanguage()
-    lateinit var operatorCountryCode: String
+    @JvmStatic lateinit var androidID: String
+    @JvmStatic lateinit var gsfID: String
+    @JvmStatic var deviceCountryCode = IdentifiersUtil.getDeviceCountryCode()
+    @JvmStatic var deviceLanguage = IdentifiersUtil.getDeviceLanguage()
+    @JvmStatic lateinit var operatorCountryCode: String
+    @JvmStatic lateinit var tokenRegistry: TokenRegistry
 
     /**
      * Initializes properties that need to be set with a [Context]
      */
     @Keep
-    fun init(context: Context) {
+    @JvmStatic fun init(context: Context) {
         androidID = IdentifiersUtil.getAndroidID(context)
         client = OkHttpClient.Builder().build()
         operatorCountryCode = IdentifiersUtil.getOperatorCountryCode(context)
         gsfID = IdentifiersUtil.getGservicesID(context, true)
+        tokenRegistry = SharedPrefsTokenRegistry(
+                context.getSharedPreferences("Exponent", Context.MODE_PRIVATE))
     }
-
 
 }
