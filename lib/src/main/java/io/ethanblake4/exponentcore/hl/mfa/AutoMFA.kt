@@ -1,7 +1,7 @@
 package io.ethanblake4.exponentcore.hl.mfa
 
+import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.webkit.WebView
 import io.ethanblake4.exponentcore.Exponent
 import io.ethanblake4.exponentcore.R
@@ -27,7 +27,7 @@ object AutoMFA {
      * @param webView Optional. A custom WebView to control instead of creating one anew.
      */
     @JvmStatic fun handleBrowserRecover(
-            context: Context, email: String, exception: NeedsBrowserException,
+            context: Activity, email: String, exception: NeedsBrowserException,
             onSuccess: (ExAccountInfo) -> Unit, onError: (Throwable?) -> Unit,
             tokenCaptured: ((Unit) -> Unit)? = null, webView: WebView? = null) {
 
@@ -44,17 +44,21 @@ object AutoMFA {
         }
 
         if(webView != null) {
-            MFAWebViewUtil.setupWebView(webView, exception.url, afterTk)
+            context.runOnUiThread { MFAWebViewUtil.setupWebView(webView, exception.url, afterTk) }
         } else {
-            val dialog = Dialog(context)
-            dialog.setContentView(R.layout.web_dialog)
-            MFAWebViewUtil.setupWebView(
-                    dialog.findViewById(R.id.ex_auth_webview), exception.url, {
-                afterTk(it)
-                dialog.hide()
-            })
-            dialog.show()
+            context.runOnUiThread {
+                val dialog = Dialog(context)
+                dialog.setContentView(R.layout.web_dialog)
+                MFAWebViewUtil.setupWebView(
+                        dialog.findViewById(R.id.ex_auth_webview), exception.url) {
+                    afterTk(it)
+                    dialog.hide()
+                }
+                dialog.show()
+            }
         }
     }
+
+
 
 }

@@ -2,6 +2,7 @@ package io.ethanblake4.exponentcore.auth
 
 import android.support.annotation.Keep
 import android.util.ArrayMap
+import android.util.Log
 import io.ethanblake4.exponentcore.Exponent
 import io.ethanblake4.exponentcore.Logging
 import io.ethanblake4.exponentcore.model.ClientTokenInfo
@@ -16,6 +17,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.security.GeneralSecurityException
 
+@Keep
 object GoogleAuth {
 
     private val AUTH_URL = "https://android.clients.google.com/auth"
@@ -75,7 +77,7 @@ object GoogleAuth {
     @Throws(IOException::class)
     private fun parseAuthResponse(`in`: InputStream): ArrayMap<String, String> {
         val response = ArrayMap<String, String>()
-        BufferedReader(InputStreamReader(`in`)).useLines { it.map { line ->
+        BufferedReader(InputStreamReader(`in`)).useLines { it.forEach { line ->
             Logging.i(line)
             val s = line.split("=".toRegex(), 2).toTypedArray()
             response[s[0]] = s[1]
@@ -201,8 +203,8 @@ object GoogleAuth {
                 response["Token"]!!, response["Auth"]!!,
                 response["SID"], response["LSID"], services,
                 response["Email"],
-                response["FirstName"] ?: "",
-                response["LastName"] ?: "",
+                response["firstName"] ?: "",
+                response["lastName"] ?: "",
                 GooglePlusUpdate)
     }
 
@@ -234,8 +236,8 @@ object GoogleAuth {
         return ClientTokenInfo(response["Auth"]!!,
                 response["SID"], response["LSID"], services,
                 response["Email"],
-                response["FirstName"]?: "",
-                response["LastName"] ?: "",
+                response["firstName"]?: "",
+                response["lastName"] ?: "",
                 GooglePlusUpdate)
     }
 
@@ -299,7 +301,14 @@ object GoogleAuth {
 
         okLoginCallAsync(AUTH_URL, createMasterAuthForm(email, password), { response ->
             if(response == null) onError(null)
-            else onSuccess(masterAuthInfo(response))
+            else {
+                Log.d("EXCORE", response.entries.joinToString { it.key + "=" + it.value })
+                try {
+                    onSuccess(masterAuthInfo(response))
+                } catch (e: Throwable) {
+                    onError(e)
+                }
+            }
         }, { e -> onError(e)})
     }
 
@@ -320,7 +329,11 @@ object GoogleAuth {
 
         okLoginCallAsync(AUTH_URL, createMasterReauthForm(email, token), { response ->
             if(response == null) onError(null)
-            else onSuccess(masterAuthInfo(response))
+            else try {
+                onSuccess(masterAuthInfo(response))
+            } catch (e: Throwable) {
+                onError(e)
+            }
         }, { e -> onError(e)})
     }
 

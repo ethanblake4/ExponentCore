@@ -1,5 +1,6 @@
 package io.ethanblake4.exponentcore.hl
 
+import android.util.Log
 import io.ethanblake4.exponentcore.Exponent
 import io.ethanblake4.exponentcore.auth.GoogleAuth
 import io.ethanblake4.exponentcore.model.MasterTokenInfo
@@ -14,6 +15,7 @@ object ExponentAccounts {
     @JvmStatic fun setAccount(email: String): Boolean {
         Exponent.tokenRegistry.getMasterTokenFor(email)?.let {
             master = it
+            Log.d("EX_ACCT", it.toString())
             currentAccount = ExAccountInfo(email, it.firstName, it.lastName)
             return true
         }

@@ -1,8 +1,9 @@
 package io.ethanblake4.exponentcore.hl
 
+import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.support.annotation.Keep
+import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import io.ethanblake4.exponentcore.R
@@ -12,6 +13,10 @@ import io.ethanblake4.exponentcore.model.error.NeedsBrowserException
 
 @Keep
 object ExAuthFlow {
+
+    private const val WEBAUTH_URL =
+            "https://accounts.google.com/signin/v2/identifier?" +
+            "sacu=1&flowName=GlifWebSignIn&flowEntry=AddSession"
 
     class UnspecifiedAuthError: Exception()
 
@@ -30,7 +35,7 @@ object ExAuthFlow {
     }
 
     @Keep
-    @JvmStatic fun start(context: Context, format: Format, stateCallback: (State) -> Unit,
+    @JvmStatic fun start(context: Activity, format: Format, stateCallback: (State) -> Unit,
                          errorCallback: (Throwable) -> Unit, enableMFA: Boolean = true) {
         val dialog = Dialog(context)
         when(format) {
@@ -44,6 +49,7 @@ object ExAuthFlow {
                 webView.settings.useWideViewPort = false
                 webView.settings.loadWithOverviewMode = true
 
+                // The JavaScript interface will receive credentials from the page
                 webView.addJavascriptInterface(LoginJsInterface { username, pass ->
                     // We've received the credentials from the login dialog
                     stateCallback(State.AUTHORIZE)
@@ -78,11 +84,12 @@ object ExAuthFlow {
                     })
                 }, "Android")
                 // Load the Google login page. "sacu=1" forces direct email/pass entry
-                webView.loadUrl("https://accounts.google.com/AddSession?sacu=1")
+                webView.loadUrl(WEBAUTH_URL)
 
                 // Wait for the page to load
                 webView.webViewClient = object: WebViewClient() {
                     override fun onPageFinished(view: WebView, url: String?) {
+                        Log.d("WHattt!!","Injecting for URL $url")
                         super.onPageFinished(view, url)
                         val input = context.assets.open("authflow.js")
                         val buffer = ByteArray(input.available())
@@ -90,8 +97,11 @@ object ExAuthFlow {
                         input.read(buffer)
                         input.close()
 
+                        val js = String(buffer)
+                        Log.d("ExJs", js)
+
                         // Inject our script that 'steals' credentials from the page
-                        view.evaluateJavascript(String(buffer), {})
+                        view.evaluateJavascript(js, {})
                     }
                 }
                 dialog.show()

@@ -1,6 +1,6 @@
 package io.ethanblake4.exponentcore.hl.mfa
 
-import android.os.Handler
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -14,13 +14,12 @@ class TokenCaptureWebViewClient(val tokenCallback: (String) -> Unit) : WebViewCl
 
     override fun onPageFinished(view: WebView?, url: String) {
         val cookies = CookieManager.getInstance().getCookie(url)
+        Log.d("TOKENS", cookies)
 
-        if (cookies.contains("oauth_code=") || cookies.contains("oauth_token=")) {
-            Handler().postDelayed({
-                cookies.split(";").map {
-                    Pair(it.split("=")[0], it.split("=")[1])
-                }.firstOrNull { it.first == "oauth_token" }?.second?.trim()?.let(tokenCallback)
-            }, 400)
+        if (cookies.contains("oauth_token=")) {
+            cookies.split(";").map {
+                Pair(it.split("=")[0], it.split("=")[1])
+            }.firstOrNull { it.first.contains("oauth_token") }?.second?.trim()?.let(tokenCallback)
         }
     }
 }

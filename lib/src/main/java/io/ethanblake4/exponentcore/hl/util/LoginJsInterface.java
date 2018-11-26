@@ -1,5 +1,6 @@
 package io.ethanblake4.exponentcore.hl.util;
 
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import kotlin.Unit;
@@ -15,11 +16,13 @@ public class LoginJsInterface {
 
     @JavascriptInterface
     public void returnUsername(String username) {
+        Log.d("RETURN USERNAME", username);
         this.username = username;
     }
 
     @JavascriptInterface
     public void returnPassword(String password) {
+        Log.d("RETURN PASS", password);
         this.callback.invoke(username, password);
     }
 }
