@@ -18,6 +18,7 @@ object Exponent {
      * Default logger that prints log messages to the Android log.
      */
     private var defaultLog =  { message: String, level: LogLevel, err: Throwable? ->
+        Log.d(TAG, message + level.ordinal.toString())
         when {
             level.ordinal < logLevel.ordinal -> -1
             err == null -> when(level) {
