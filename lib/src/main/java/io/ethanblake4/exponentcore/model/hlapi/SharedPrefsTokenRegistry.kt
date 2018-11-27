@@ -106,7 +106,6 @@ class SharedPrefsTokenRegistry (val prefs: SharedPreferences): TokenRegistry {
             }
             apply()
         }
-
     }
 
     override fun deleteOAuthTokensFor(email: String) {

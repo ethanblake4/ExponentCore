@@ -5,6 +5,9 @@ Exponent is written in Kotlin and has library dependencies on the Kotlin stdlib,
 
 Exponent has *no dependency* on Play Services (or microG etc.) being installed on a target device, so it's also great for open-source apps intended for custom ROMs. However, support for public Google APIs is currently nonexistent (feel free to open an issue).
 
+To use Exponent in your project, simply add the following line to your app module's build.gradle:
+`implementation 'io.ethanblake4:exponent-core:0.0.1'`
+
 ### Initialization
 Before using any of the below methods, make sure to call `Exponent.init(context)`. A good place to put it is in your Application subclass, but it can go anywhere as long as it is called before any other Exponent method.
 
@@ -60,13 +63,13 @@ class MyActivity : Activity() {
             Log.d("My First Name", accountInfo.firstName)
           }, { err ->
             Toast.makeText(this@MyActivity, "Error logging in", Toast.LENGTH_LONG).show();
-          });
+          })
           
         } else {
           Toast.makeText(this@MyActivity, "Error logging in", Toast.LENGTH_LONG).show();
         }
         
-      }
+      })
     }
   }
 }
