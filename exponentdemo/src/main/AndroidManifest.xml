@@ -9,17 +9,18 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="FitTrainer Pro"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:name=".DemoApplication"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".CustomLoginActivity"
             android:label="Custom Login">
         </activity>
         <activity android:name=".MainActivity"
-            android:label="@string/app_name">
+            android:label="FitTrainer Pro">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

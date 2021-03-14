@@ -34,6 +34,7 @@ object GoogleAuth {
     private fun okLoginCall(url: String, body: FormBody): Map<String, String>? {
         val request = Request.Builder()
                 .header("User-Agent", Exponent.loginUserAgent)
+                .header("device", Exponent.androidID)
                 .url(url).post(body).build()
         val r = Exponent.client.newCall(request).execute()
         r.body()?.let {
@@ -52,12 +53,16 @@ object GoogleAuth {
      * @throws IOException if a network error occurs
      */
     private fun okLoginCallAsync(url: String, body: FormBody, callback: (Map<String, String>?) -> Unit,
-                                 errCallback: (Throwable?) -> Unit) {
+                                 errCallback: (Throwable?) -> Unit, app: String? = null) {
         val request = Request.Builder()
-                .header("User-Agent", Exponent.loginUserAgent)
-                .url(url).post(body).build()
+                .header("User-Agent", Exponent.loginUserAgent);
+        app?.let {
+            request.header("app", app)
+        }
 
-        Exponent.client.newCall(request).enqueue(object: Callback {
+        val built = request.url(url).post(body).build()
+
+        Exponent.client.newCall(built).enqueue(object: Callback {
             override fun onFailure(call: Call?, e: IOException?) { errCallback(e) }
 
             override fun onResponse(call: Call?, r: Response?) {
@@ -95,6 +100,7 @@ object GoogleAuth {
      * @return A builder that can be extended with values for specific calls
      */
     private fun baseFormBuilder(email: String, device_id: String, service: String): FormBody.Builder {
+        Log.w("EXpDeviceId", device_id);
         return FormBody.Builder()
                 .add("accountType", "HOSTED_OR_GOOGLE")
                 .add("Email", email)
@@ -102,6 +108,7 @@ object GoogleAuth {
                 .add("source", "android")
                 .add("androidId", device_id)
                 .add("service", service)
+                .add("google_play_services_version", (204713 * 1000).toString())
                 .add("device_country", Exponent.deviceCountryCode)
                 .add("operatorCountry", Exponent.operatorCountryCode)
                 .add("lang", Exponent.deviceLanguage)
@@ -119,7 +126,23 @@ object GoogleAuth {
     @Throws(IOException::class, GeneralSecurityException::class)
     private fun createMasterAuthForm(email: String, password: String): FormBody {
         return baseFormBuilder(email, Exponent.androidID, "ac2dm")
+                .add("add_account", "1")
                 .add("EncryptedPasswd", AuthEncryptor.encrypt(email, password))
+                .build()
+    }
+
+    private fun createEmbeddedForm(token: String): FormBody {
+        return FormBody.Builder()
+                .add("app", "com.google.android.gms")
+                .add("client_sig", "38918a453d07199354f8b19af05ec6562ced5788")
+                .add("callerPkg", "com.google.android.gms")
+                .add("callerSig", "38918a453d07199354f8b19af05ec6562ced5788")
+                .add("service", "ac2dm")
+                .add("Token", token)
+                .add("ACCESS_TOKEN", "1")
+                .add("add_account", "1")
+                .add("get_accountid", "1")
+                .add("google_play_services_version", (204713 * 1000).toString())
                 .build()
     }
 
@@ -310,6 +333,34 @@ object GoogleAuth {
                 }
             }
         }, { e -> onError(e)})
+    }
+
+    /**
+     * Retrieve an Android master token asynchronously
+     * This endpoint is usually called by Google Play services to register a device
+     * on initial activation.
+     *
+     * @param email user's email
+     * @param password user's password, will be encrypted
+     * @param onSuccess Callback receiving a [MasterTokenInfo] if the call was successful
+     * @param onError Callback receiving a [Throwable] if the call failed
+     * The throwable may be a [NeedsBrowserException], [AuthException], other, or null
+     */
+    @Keep @JvmStatic
+    fun embeddedAuthAsync(token: String, onSuccess: (MasterTokenInfo?) -> Unit,
+                        onError: (Throwable?) -> Unit) {
+
+        okLoginCallAsync(AUTH_URL, createEmbeddedForm(token), { response ->
+            if(response == null) onError(null)
+            else {
+                Log.d("EXCORE", response.entries.joinToString { it.key + "=" + it.value })
+                try {
+                    onSuccess(masterAuthInfo(response))
+                } catch (e: Throwable) {
+                    onError(e)
+                }
+            }
+        }, { e -> onError(e)}, "com.google.android.gms")
     }
 
     /**

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/runner"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="34dp"
+        android:text="FitTrainer Pro"
+        android:textColor="@android:color/white"
+        android:textSize="34dp"
+        android:textStyle="bold" />
+
+    <com.shobhitpuri.custombuttons.GoogleSignInButton
+        android:id="@+id/authFlowStart"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="282dp"
+        android:text="Sign In with Google" />
+
+
+    <android.support.design.button.MaterialButton
+        android:id="@+id/customStart"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+
+        android:layout_marginTop="8dp"
+        android:text="Sign in" />
+
+</LinearLayout>

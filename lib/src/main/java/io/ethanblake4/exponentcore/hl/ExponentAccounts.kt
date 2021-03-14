@@ -35,12 +35,33 @@ object ExponentAccounts {
         if(!forceReauth && setAccount(email)) {
             onSuccess(currentAccount!!); return
         }
+
         // Perform (Re-) authorization
         GoogleAuth.masterAuthAsync(email, password, { token ->
             if(token == null) onError(NoTokenException())
             else {
                 Exponent.tokenRegistry.saveMasterTokenFor(email, token)
                 setAccount(email)
+                onSuccess(currentAccount!!)
+            }
+        }, onError)
+    }
+
+    @JvmOverloads @JvmStatic fun loginEmbedded(token: String,
+                                       onSuccess: (ExAccountInfo) -> Unit,
+                                       onError: (Throwable?) -> Unit,
+                                       forceReauth: Boolean = false) {
+
+
+        // Perform (Re-) authorization
+        GoogleAuth.embeddedAuthAsync(token, { mtoken ->
+            if(mtoken == null) onError(NoTokenException())
+            else {
+                if(mtoken.Email == null) {
+                    onError(NoTokenException())
+                }
+                Exponent.tokenRegistry.saveMasterTokenFor(mtoken.Email!!, mtoken)
+                setAccount(mtoken.Email)
                 onSuccess(currentAccount!!)
             }
         }, onError)

@@ -18,7 +18,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-final class AuthEncryptor {
+public final class AuthEncryptor {
 
     // The Google public key
     private static final String googleDefaultPublicKey =
@@ -34,7 +34,7 @@ final class AuthEncryptor {
      * Function credits - Dima Kovalenko (http://codedigging.com/blog/2014-06-09-about-encryptedpasswd/)
      **/
     @SuppressWarnings("static-access")
-    static String encrypt(String login, String password)
+    public static String encrypt(String login, String password)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, UnsupportedEncodingException,
             InvalidKeyException, IllegalBlockSizeException,
